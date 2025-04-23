@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User,Post
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
@@ -10,7 +10,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', "email", "password", "password2", 'first_name', 'last_name' )
+        fields = ['username', "email", "password", "password2", 'first_name', 'last_name' ]
 
     def validate(self, attrs):
 
@@ -24,3 +24,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['user','id','image','caption','created_at']
+        read_only_fields = ['user','id','created_at']

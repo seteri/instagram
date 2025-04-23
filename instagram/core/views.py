@@ -1,11 +1,14 @@
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer,PostSerializer
+from .models import Post,User
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -72,3 +75,48 @@ class LoginView(APIView):
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class MyPostView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request):
+        try:
+            serializer = PostSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                "error": "Something went wrong",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get(self, request):
+        posts = Post.objects.filter(user=request.user).order_by("-created_at")
+        serializer = PostSerializer(posts,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+class Delete_or_edit_myPost(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def put(self, request,pk):
+        try:
+            post = get_object_or_404(Post, pk=pk)
+            if post.user != request.user:
+                return Response({'msg': 'u cant edit this post'})
+            serializer = PostSerializer(post,data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            return  Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                "error": "Something went wrong",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class User_Post(APIView):
+    def get(self, request,username):
+        user = get_object_or_404(User,username=username)
+        posts = Post.objects.filter(user=user).order_by("-created_at")
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
