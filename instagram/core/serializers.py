@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User,Post
+from .models import User, Post, Comment, Reply
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
@@ -29,3 +29,20 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ['user','id','image','caption','created_at']
         read_only_fields = ['user','id','created_at']
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'post', 'text', 'created_at']
+
+
+class ReplySerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Reply
+        fields = ['id', 'user', 'comment', 'text', 'created_at']
+

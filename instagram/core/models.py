@@ -52,6 +52,15 @@ class Comment(models.Model):
         return f'{self.user.username} -მა დადო პოსტი- {str(self.post)}'
 
 
+class Reply(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="replies")
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} -მა დადო პოსტი- {str(self.post)}'
+
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followers")

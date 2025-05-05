@@ -41,12 +41,23 @@ INSTALLED_APPS = [
     'core',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders'
 ]
 
 
 AUTH_USER_MODEL = 'core.User'
 
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # or whatever port your frontend runs on
+    "http://127.0.0.1:3000",
+    "http://localhost",
+]
+CORS_ALLOW_ALL_ORIGINS = True
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # <-- Add this at the top
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
